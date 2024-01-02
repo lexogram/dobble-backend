@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Using WebSocket</title>
+</head>
+
+<body>
+  <h1>Using WebSocket</h1>
+  <p></p>
+      
+  <script>
+  ;(function () {
+    "use strict"
+    const p = document.getElementsByTagName("p")[0]
+  
+    // Open a web socket and connect to the server
+    const socket = new WebSocket('ws://localhost:3000');
+
+    // Send the server a message as soon as the connection is open
+    socket.onopen = () => {
+      const message = "Hello from client"
+      console.log("About to send:", message)
+      socket.send(message)
+      console.log("Message sent")
+    }
+
+    // Treat any replies from the server
+    socket.onmessage = (event) => {
+      const reply = event.data
+      console.log("Reply received:", reply );
+      p.innerText = reply;
+    }
+  })()
+  </script>
+</body>
+</html>
