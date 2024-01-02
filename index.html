@@ -9,12 +9,42 @@
 <body>
   <h1>Using WebSocket</h1>
   <p></p>
-      
+  <form
+    action="/enter"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <!--
+      "multipart/form-data" is the format FormData generates.
+      On the backend, it requires multer to parse it.
+    -->
+
+    <span>Log in as:</span>
+    <input type="text" name="user" id="user" />
+    <button type="submit">Go</button>
+  </form >
+
   <script>
   ;(function () {
     "use strict"
     const p = document.getElementsByTagName("p")[0]
-  
+    const form = document.getElementsByTagName("form")[0]
+
+    const sendForm = async (event) => {
+      event.preventDefault()
+
+      const body = new FormData(form)
+      const method = form.method
+      const dataToSend = { method, body }
+
+      const response = await fetch(form.action, dataToSend)
+      const text = await response.text()
+      p.textContent = text
+    }
+
+    form.addEventListener("submit", sendForm, false)
+
+
     // Open a web socket and connect to the server
     const socket = new WebSocket('ws://localhost:3000');
 
