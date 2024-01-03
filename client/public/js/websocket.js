@@ -5,7 +5,11 @@
 
 "use strict"
 // Open a web socket and connect to the server
-const socket = new WebSocket('ws://localhost:3000');
+
+
+const URL = `ws://${location.host}`
+
+const socket = new WebSocket(URL);
 let user_id
 
 
