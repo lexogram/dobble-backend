@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Using WebSocket</title>
+
+  <script type="text/javascript" defer src="js/websocket.js"></script>
+  <script type="text/javascript" defer src="js/login.js"></script>
+  <script type="text/javascript" defer src="js/groups.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+  <h1>Using Websocket</h1>
+  
+  <section id="login">
+    <form>
+      <label>
+        <span>Log in as:</span>
+        <input
+          class="user_name"
+          type="text"
+          name="user_name"
+          required="true"
+      />
+      </label>
+      <label>
+        <span>Join group:</span>
+        <input
+          type="text"
+          name="group"
+          required="true"
+      />
+      </label>
+      <label>
+        <span>Create new group:</span>
+        <input
+          type="checkbox"
+          name="create_group"
+          value="true"
+      />
+      </label>
+      <button
+        type="submit">Log In</button>
+    </form >
+  </section>
+
+  <section id="created">
+    <p></p>
+  </section>
+
+  <section id="joined">
+    <p></p>
+  </section>
+
+  <section id="create-failed">
+    <p></p>
+    <button class="login-again">Try again</button>
+  </section>
+
+  <section id="join-failed">
+    <p></p>
+    <button class="login-again">Try again</button>
+  </section class="login-again">
+
+  <section>
+    <h2>Connecting...</h2>
+  </section>
+
+  <form id="members">
+    <h2 id="group-name"></h2>
+    <ul id="group-members"></ul>
+  </form>
+</body>
+</html>

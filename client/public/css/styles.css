@@ -1,0 +1,60 @@
+section {
+  display: none;
+  width: fit-content;
+}
+
+section:target,
+section:last-child {
+  display: block;
+}
+
+
+section:target ~ section:last-child {
+  display: none;
+}
+
+section#login * {
+  --spacing: 8em;
+  --width: 12em;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+label {
+  display: block;
+  margin: 0.5em 0;
+}
+
+span {
+  display: inline-block;
+  width: var(--spacing);
+  text-align: right;
+}
+
+input[type="text"] {
+  width: var(--width)
+}
+
+button {
+  margin-top: 1em;
+  width: 100%;
+}
+
+form:invalid button {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+#members ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#members input:disabled{
+  visibility: hidden;
+}
+
+#members input:disabled ~ span{
+  font-weight: bold;
+}
