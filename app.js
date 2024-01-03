@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const multer = require('multer')
 const upload = multer() // no destination folder required... yet
 const multipart = upload.none();
+const { v4: uuid } = require('uuid')
 
 
 const PORT = 3000
@@ -46,13 +47,44 @@ app.use('/enter', enterRouter);
 // channel open and push messages through it to the client
 const WebSocket = require('ws')
 
+const users = {}
+
 const WSServer = new WebSocket.Server({ server })
 WSServer.on('connection', (socket) => {
-  console.log("New connection")
+  const id = uuid()
+  console.log(`New connection from: ${id}`)
+  users[id] = { socket }
 
-  socket.on('message', (data) => {
-    const message = data.toString() // data is a buffer
-    console.log("New message:", message);
-    socket.send('Thanks for connecting');
+  const welcome = JSON.stringify({ subject: "connection", id })
+  socket.send(welcome)
+
+  socket.on('message', message => {
+    try {
+      const data = JSON.parse(message.toString())
+      const { subject, id, content } = data
+      console.log("New message:", data);
+
+      switch (subject) {
+        case "name":
+          return setNameFor(id,  content)
+      }
+    } catch {
+
+    }
   })
+
+
+  function setNameFor(id, name) {
+    const userObject = users[id]
+    userObject.name = name
+
+    const message = JSON.stringify({
+      subject: "chat",
+      sender: "system",
+      recipient: id,
+      content: `Welcome, ${name}!`
+    })
+
+    socket.send(message)
+  }
 })

@@ -20,7 +20,8 @@
     -->
 
     <span>Log in as:</span>
-    <input type="text" name="user" id="user" />
+    <input type="hidden" name="subject" value="name" />
+    <input type="text" name="content" />
     <button type="submit">Go</button>
   </form >
 
@@ -29,17 +30,22 @@
     "use strict"
     const p = document.getElementsByTagName("p")[0]
     const form = document.getElementsByTagName("form")[0]
+    let id
 
     const sendForm = async (event) => {
       event.preventDefault()
 
-      const body = new FormData(form)
-      const method = form.method
-      const dataToSend = { method, body }
+      const data = Array.from(new FormData(form))
+      const map = data.reduce((map, [ key, value ]) =>{
+        map[key] = value
+        return map
+      }, {})
+      map.id = id
+      console.log("map:", map);
 
-      const response = await fetch(form.action, dataToSend)
-      const text = await response.text()
-      p.textContent = text
+      const json = JSON.stringify(map)
+
+      socket.send(json)
     }
 
     form.addEventListener("submit", sendForm, false)
@@ -48,19 +54,37 @@
     // Open a web socket and connect to the server
     const socket = new WebSocket('ws://localhost:3000');
 
-    // Send the server a message as soon as the connection is open
-    socket.onopen = () => {
-      const message = "Hello from client"
-      console.log("About to send:", message)
-      socket.send(message)
-      console.log("Message sent")
-    }
+
+    socket.onopen = () => {}
 
     // Treat any replies from the server
     socket.onmessage = (event) => {
-      const reply = event.data
-      console.log("Reply received:", reply );
-      p.innerText = reply;
+      const string = event.data
+      console.log("Reply received:", string )
+
+      try {
+        const data = JSON.parse(string)
+        const { subject, sender, id, content } = data
+
+        switch (subject) {
+          case "connection":
+            return handleConnection(id)
+          case "chat":
+            return handleChat(sender, content)
+        };
+      } catch {
+
+      }
+    }
+
+
+    function handleConnection(user_id) {
+      id = user_id
+      p.innerText = "Connected. Please enter your name";
+    }
+
+    function handleChat(sender, message) {
+      p.innerText = `${sender} says: ${message}`
     }
   })()
   </script>
