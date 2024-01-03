@@ -4,12 +4,12 @@ section {
 }
 
 section:target,
-section:last-child {
+section:last-of-type {
   display: block;
 }
 
 
-section:target ~ section:last-child {
+section:target ~ section:last-of-type {
   display: none;
 }
 
