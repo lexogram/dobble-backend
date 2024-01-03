@@ -3,8 +3,9 @@ const http = require('http')
 const express = require('express')
 // Utilities
 const path = require('path')
+require('dotenv').config()
 
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 
 // Custom requirements
 const websocket = require('./websocket')
@@ -15,7 +16,7 @@ const server = http.createServer(app)
 
 // Start the server
 server.listen(PORT, () => {
-  console.log(`http server running on http://localhost:${PORT}`)
+  console.log(`http server running on port ${PORT}`)
 })
 
 // Tell client/index.html where to find images and scripts
