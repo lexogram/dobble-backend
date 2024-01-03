@@ -31,8 +31,9 @@ const treatMessage = (data) => {
   }
 
   switch (subject) {
-    case "name":
-      return setNameFor(id,  content)
+    case "chat":
+      data.sender = users[sender_id].user_name
+      return sendMessageToGroup(data)
   }
 }
 

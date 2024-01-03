@@ -10,8 +10,6 @@
 let URL = location.host
 const protocol = (URL.startsWith("localhost")) ? "ws" : "wss"
 URL = `${protocol}://${URL}`
-console.log("URL:", URL);
-
 
 
 const socket = new WebSocket(URL);
@@ -27,7 +25,6 @@ socket.onopen = () => {
 // Treat any replies from the server
 socket.onmessage = (event) => {
   const string = event.data
-  console.log("Reply received:", string )
 
   try {
     const data = JSON.parse(string)
@@ -40,6 +37,8 @@ socket.onmessage = (event) => {
         return handleLogin(content)
       case "group-members":
         return updateGroupMembers(content)
+      case "chat":
+        return handleChat(data)
     };
   } catch {
 
