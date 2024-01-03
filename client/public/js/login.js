@@ -55,6 +55,17 @@ loginAgain.forEach( button => button.addEventListener(
 
 
 
+const joinChat = Array.from(
+  document.querySelectorAll(".join-chat")
+)
+joinChat.forEach( button => button.addEventListener(
+  "click", () => {
+    location.hash = "chat"
+ })
+)
+
+
+
 function handleLogin(content) {
   const { status, user_name, group, owner } = content
 
