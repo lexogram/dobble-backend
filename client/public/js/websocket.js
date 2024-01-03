@@ -1,13 +1,18 @@
 /**
  * websocket.js
  * 
+ * Opens a web socket and connect to the server
  */
 
 "use strict"
-// Open a web socket and connect to the server
 
 
-const URL = `ws://${location.host}`
+let URL = location.host
+const protocol = (URL.startsWith("localhost")) ? "ws" : "wss"
+URL = `${protocol}://${URL}`
+console.log("URL:", URL);
+
+
 
 const socket = new WebSocket(URL);
 let user_id
@@ -26,7 +31,7 @@ socket.onmessage = (event) => {
 
   try {
     const data = JSON.parse(string)
-    const { subject, sender_id, recipient_id, content } = data
+    const { subject, recipient_id, content } = data
 
     switch (subject) {
       case "connection":
