@@ -3,8 +3,8 @@
  *
  */
 
-const groupName = document.getElementById("group-name")
-const membersList = document.getElementById("group-members")
+const groupName = document.querySelector(".group-name")
+const membersList = document.querySelector(".group-members")
 
 
 const byUserName = (a, b) => {
@@ -20,7 +20,8 @@ const byUserName = (a, b) => {
 
 const updateGroupMembers = ({ group, members }) => {
   groupName.textContent = group
-  const innerHTML = Object.entries(members)
+  members = Object.entries(members)
+  let innerHTML = members
   .sort(byUserName)
   .reduce(
     ( html, [ user_name, id ] ) => {
@@ -30,6 +31,7 @@ const updateGroupMembers = ({ group, members }) => {
             id="${id}"
             type="checkbox"
             value=${id}
+            checked
             ${id === user_id ? "disabled" : ""}
           />
           <span>${user_name}</span
@@ -39,5 +41,14 @@ const updateGroupMembers = ({ group, members }) => {
       return html
     },
   "")
+
+  if (members.length < 2) {
+    innerHTML += `<li class="center">(No-one else is here)</li>`
+  }
   membersList.innerHTML = innerHTML
+
+  const maxHeight = Math.max(2, Math.min(4, members.length))
+                  * 1.8 + 0.5 + "em"
+
+  document.body.style.setProperty( "--ul-height", maxHeight )
 }

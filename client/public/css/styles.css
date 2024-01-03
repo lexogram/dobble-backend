@@ -1,6 +1,41 @@
+body {
+
+  --h2-height: 2.5rem;
+  --ul-height: 4rem;
+  --text-height: 3rem;
+  --chat-heights: calc(
+    var(--h2-height) +
+    var(--ul-height) +
+    var(--text-height)
+  );
+  --min-history-height: 160px;
+  --history-height: max(
+    var(--min-history-height),
+    calc(100vh - var(--chat-heights))
+  );
+  --chat-height: max(
+    100vh,
+    calc(var(--chat-heights + var(--history-height)))
+  );
+  margin: 0;
+  height: 100vh;
+  min-width: 320px;
+  max-width: 640px;
+  /* min-height: var(--min-height); */
+  background-color: #222;
+  color: #ddd;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-top: 0;
+  text-align: center;
+}
+
 section {
   display: none;
   width: fit-content;
+  margin: 0 auto;
 }
 
 section:target,
@@ -8,14 +43,13 @@ section:last-of-type {
   display: block;
 }
 
-
 section:target ~ section:last-of-type {
   display: none;
 }
 
-section#login * {
+section#login form * {
   --spacing: 8em;
-  --width: 12em;
+  --width: 11em;
   font-family: inherit;
   font-size: inherit;
 }
@@ -45,16 +79,95 @@ form:invalid button {
   pointer-events: none;
 }
 
-#members ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+#chat {
+  width: 100%;
+  height: var(--chat-height);
+  background-color: #232;
+  top: 0;
+  overflow: hidden;
 }
 
-#members input:disabled{
+#chat h2 {
+  text-align: center;
+  margin: 0;
+  padding-top: 0.5rem;
+  box-sizing:border-box;
+  height: var(--h2-height);
+}
+
+#chat .group ul {
+  list-style-type: none;
+  height: var(--ul-height);
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+}
+
+#chat li.center {
+  text-align: center;
+}
+
+#chat .group input:disabled{
   visibility: hidden;
 }
 
-#members input:disabled ~ span{
+#chat .group input:disabled ~ span{
   font-weight: bold;
+}
+
+#chat .history {
+   height: var(--history-height);
+   min-height: var(--min-height);
+   overflow: auto;
+}
+
+#chat .history p {
+  border: 1px inset #888;
+  border-radius: 0.5em;
+  padding: 0.25em 0.5em;
+}
+
+#chat .history .them {
+  background-color: #330;
+  border-left-width: 0px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-right: 2em;
+}
+
+#chat .history .us {
+  background-color: #030;
+  text-align: right;
+  border-right-width: 0px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-left: 2em;
+}
+
+#chat .compose {
+  height: var(--text-height);
+  --chat-width: calc(100% - var(--text-height) - 8px);
+  width: 100%;
+  position: relative;
+  display: flex;
+  background-color: #ddd;
+  color: #222
+}
+
+#chat .compose textarea {
+  width: var(--chat-width);
+  text-align: left;
+  height: var(--text-height);
+  resize: none;
+}
+
+#chat .compose button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  width: var(--text-height);
+  box-sizing: border-box;
 }

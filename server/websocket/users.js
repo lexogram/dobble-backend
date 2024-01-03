@@ -82,16 +82,18 @@ const treatLogin = (user_id, content) => {
       status = "create-failed"
 
     } else {
+      members = new Set().add(user_id)
       groups[group] = groupObject = {
         owner_id: user_id,
-        members: new Set().add(user_id)
+        members
       }
       status = "created"
+      broadcastMembersToGroup(group, members)
     }
 
   } else if (groupObject) {
     members.add(user_id)
-    broadCastMembersToGroup(group, members)
+    broadcastMembersToGroup(group, members)
     status = "joined"
 
   } else {
@@ -134,7 +136,7 @@ const sendMessageToGroup = (message) => {
 }
 
 
-const broadCastMembersToGroup = (group, recipient_id) => {
+const broadcastMembersToGroup = (group, recipient_id) => {
   recipient_id = Array.from(recipient_id)
   const members = recipient_id.reduce((map, user_id) => {
     map[ users[user_id].user_name ] = user_id
@@ -145,7 +147,7 @@ const broadCastMembersToGroup = (group, recipient_id) => {
     group,
     members
   }
-  
+
   const message = {
     sender_id: "system",
     recipient_id,
