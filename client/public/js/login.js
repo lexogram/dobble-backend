@@ -56,6 +56,17 @@ loginAgain.forEach( button => button.addEventListener(
 
 
 
+const refresh = Array.from(
+  document.querySelectorAll(".refresh")
+)
+refresh.forEach( button => button.addEventListener(
+  "click", () => {
+    location.reload()
+ })
+)
+
+
+
 const joinChat = Array.from(
   document.querySelectorAll(".join-chat")
 )
