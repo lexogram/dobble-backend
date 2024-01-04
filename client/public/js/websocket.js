@@ -46,6 +46,11 @@ socket.onmessage = (event) => {
 }
 
 
+socket.onclose = () => {
+  location.hash = "login"
+}
+
+
 function handleConnection(id) {
   user_id = id
 }

@@ -29,6 +29,7 @@ const updateGroupMembers = ({ group, members }) => {
   members = Object.entries(members)
   let innerHTML = members
   .sort(byUserName)
+  .slice(1)
   .reduce(
     ( html, [ user_name, id ] ) => {
       html += `<li>
@@ -39,7 +40,6 @@ const updateGroupMembers = ({ group, members }) => {
             name=${id}
             value=${id}
             checked
-            ${id === user_id ? "disabled" : ""}
           />
           <span>${user_name}</span
         </label>
@@ -50,12 +50,13 @@ const updateGroupMembers = ({ group, members }) => {
   "")
 
   if (members.length < 2) {
-    innerHTML += `<li class="center">(No-one else is here)</li>`
+    innerHTML += `<li class="center">No-one else is here now.</li>`
   }
   membersList.innerHTML = innerHTML
 
-  const maxHeight = Math.max(2, Math.min(4, members.length))
-                  * 1.8 + 0.5 + "em"
+  const maxHeight = Math.max(
+    1, Math.min(4, members.length - 1)
+  ) * 1.8 + 0.5 + "em"
 
   document.body.style.setProperty( "--ul-height", maxHeight )
   updateRecipients()

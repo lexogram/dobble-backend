@@ -6,6 +6,7 @@
 const {
   newUser,
   treatMessage,
+  disconnect
 } = require('./users')
 
 
@@ -30,6 +31,10 @@ const websocket = (server) => {
           console.log("message could not be converted to an object")
         }
       }
+    })
+
+    socket.on('close', () => {
+      disconnect(socket)
     })
   })
 }

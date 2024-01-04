@@ -4,13 +4,13 @@
 
 
 const { v4: uuid } = require('uuid')
-const users = {}
-const groups = {}
+const users = {} // { <uuid>: { socket, user_name }}
+const groups = {} // { <name> : { owner_id, members: Set(uuid) }}
 
 
 const newUser = (socket) => {
   const user_id = uuid()
-  console.log(`New connection from: ${user_id}`)
+  // console.log(`New connection from: ${user_id}`)
   users[user_id] = { socket }
 
   const message = JSON.stringify({
@@ -24,7 +24,7 @@ const newUser = (socket) => {
 
 const treatMessage = (data) => {
   const { subject, sender_id, recipient_id, content } = data
-  console.log("New message:", data);
+  // console.log("New message:", data);
 
   if (recipient_id === "system") {
     return treatSystemMessage(subject, sender_id, content)
@@ -38,9 +38,63 @@ const treatMessage = (data) => {
 }
 
 
+
+const disconnect = (socket) => {
+  const userEntry = Object.entries(users).find(([uuid, data]) => (
+    data.socket === socket
+  ))
+
+  if (userEntry) {
+    const uuid = userEntry[0]
+    delete users[uuid]
+
+    Object.entries(groups).forEach(([name, data]) => {
+      const { members, owner_id } = data
+
+      if (members.has(uuid)) {
+        members.delete(uuid)
+
+        if (members.size) {
+          broadcastMembersToGroup(name, members)
+
+          if (owner_id === uuid) {
+            // The departing member is owner. transfer ownership
+            // to the longest-serving member
+            data.owner_id = members.values().next().value
+          }
+        } else {
+          // There's no-one left
+          delete groups[name]
+        }
+      }
+    })
+  } else {
+    console.log(`
+      ALERT
+      No userEntry found for disconnecting user.
+      This should never happen.
+      `
+    )
+  }
+
+  // const replacer = (key, value) => {
+  //   if (key === "socket") {
+  //     return "[ WebServer Socket ]" // too much information
+  //   } else if (value instanceof Set) {
+  //     return [...value] // sets don't stringify, arrays do
+  //   }
+  //
+  //   return value
+  // }
+  // console.log("users", JSON.stringify(users, replacer, '  '));
+  // console.log("groups", JSON.stringify(groups, replacer, '  '));
+}
+
+
 module.exports = {
   newUser,
-  treatMessage
+  treatMessage,
+  disconnect
 }
 
 
