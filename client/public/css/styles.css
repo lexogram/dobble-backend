@@ -171,3 +171,12 @@ form:invalid button {
   width: var(--text-height);
   box-sizing: border-box;
 }
+
+.disconnect {
+  display: flex;
+}
+
+.disconnect * {
+  display: inline-block;
+  width: 50%;
+}

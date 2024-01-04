@@ -50,6 +50,7 @@ const loginAgain = Array.from(
 loginAgain.forEach( button => button.addEventListener(
   "click", () => {
     location.hash = "login"
+    focusOn("[name='group']")
  })
 )
 
@@ -61,6 +62,7 @@ const joinChat = Array.from(
 joinChat.forEach( button => button.addEventListener(
   "click", () => {
     location.hash = "chat"
+    focusOn("textarea")
  })
 )
 
@@ -78,5 +80,6 @@ function handleLogin(content) {
       : `The group "${group}" does not exist yet. Was this a typo or did you want to create the group "${group}"?`
 
   location.hash = status
+  focusOn(":target button")
   document.querySelector(`#${status} p`).textContent = feedback
 }
