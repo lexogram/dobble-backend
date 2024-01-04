@@ -10,7 +10,7 @@ const groups = {} // { <name> : { owner_id, members: Set(uuid) }}
 
 const newUser = (socket) => {
   const user_id = uuid()
-  // console.log(`New connection from: ${user_id}`)
+  console.log(`New connection from: ${user_id}`)
   users[user_id] = { socket }
 
   const message = JSON.stringify({
@@ -24,7 +24,7 @@ const newUser = (socket) => {
 
 const treatMessage = (data) => {
   const { subject, sender_id, recipient_id, content } = data
-  // console.log("New message:", data);
+  console.log("New message:", data);
 
   if (recipient_id === "system") {
     return treatSystemMessage(subject, sender_id, content)
@@ -43,10 +43,13 @@ const disconnect = (socket) => {
   const userEntry = Object.entries(users).find(([uuid, data]) => (
     data.socket === socket
   ))
+  
 
   if (userEntry) {
     const uuid = userEntry[0]
     delete users[uuid]
+
+  console.log(`Socket closed for ${uuid} (${userEntry[1].user_name})`)
 
     Object.entries(groups).forEach(([name, data]) => {
       const { members, owner_id } = data
