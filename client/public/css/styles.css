@@ -180,3 +180,7 @@ form:invalid button {
   display: inline-block;
   width: 50%;
 }
+
+.reason {
+  text-align: center;
+}
