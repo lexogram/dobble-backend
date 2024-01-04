@@ -8,7 +8,10 @@
 
 
 let URL = location.host
-const protocol = (URL.startsWith("localhost")) ? "ws" : "wss"
+const isLocal = URL.startsWith("localhost")
+             || URL.startsWith("192.168")
+             || URL.startsWith("127.0.0")
+const protocol = isLocal ? "ws" : "wss"
 URL = `${protocol}://${URL}`
 
 
