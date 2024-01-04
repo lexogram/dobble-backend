@@ -1,6 +1,6 @@
 /**
  * websocket.js
- * 
+ *
  * Opens a web socket and connect to the server
  */
 
@@ -46,8 +46,27 @@ socket.onmessage = (event) => {
 }
 
 
-socket.onclose = () => {
-  location.hash = "login"
+socket.onclose = ({ wasClean, code, reason }) => {
+  // console.log("wasClean:", wasClean);
+  // console.log("code:", code);
+  // console.log("reason:", reason);
+
+  if (wasClean) {
+    location.hash = "login"
+    focusOn(".user_name")
+
+  } else {
+    location.hash = "error"
+    focusOn(":target button")
+  }
+}
+
+
+socket.onerror = (a, b, c) => {
+  console.log("a, b, c:", a, b, c);
+
+  location.hash = "error"
+  focusOn(":target button")
 }
 
 
