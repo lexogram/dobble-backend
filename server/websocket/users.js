@@ -24,7 +24,7 @@ const newUser = (socket) => {
 
 const treatMessage = (data) => {
   const { subject, sender_id, recipient_id, content } = data
-  console.log("New message:", data);
+  // console.log("New message:", data);
 
   if (recipient_id === "system") {
     return treatSystemMessage(subject, sender_id, content)
@@ -43,13 +43,15 @@ const disconnect = (socket) => {
   const userEntry = Object.entries(users).find(([uuid, data]) => (
     data.socket === socket
   ))
-  
+
 
   if (userEntry) {
     const uuid = userEntry[0]
     delete users[uuid]
 
-  console.log(`Socket closed for ${uuid} (${userEntry[1].user_name})`)
+    let user_name = userEntry[1].user_name
+    user_name = user_name ? `(${user_name})` : ""
+    console.log(`Socket closed for ${uuid}${user_name}`)
 
     Object.entries(groups).forEach(([name, data]) => {
       const { members, owner_id } = data
@@ -108,6 +110,9 @@ const treatSystemMessage = (subject, sender_id, content) => {
   switch (subject) {
     case "login":
       return treatLogin(sender_id, content)
+    case "confirmation":
+      console.log(sender_id, content);
+
   }
 }
 
