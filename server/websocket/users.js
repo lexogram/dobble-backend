@@ -24,7 +24,7 @@ const newUser = (socket) => {
 
 const treatMessage = (data) => {
   const { subject, sender_id, recipient_id, content } = data
-  // console.log("New message:", data);
+  console.log("New message:", data);
 
   if (recipient_id === "system") {
     return treatSystemMessage(subject, sender_id, content)
@@ -60,13 +60,13 @@ const disconnect = (socket) => {
         members.delete(uuid)
 
         if (members.size) {
-          broadcastMembersToGroup(name, members)
-
           if (owner_id === uuid) {
             // The departing member is owner. transfer ownership
             // to the longest-serving member
             data.owner_id = members.values().next().value
           }
+          broadcastMembersToGroup(name)
+
         } else {
           // There's no-one left
           delete groups[name]
@@ -108,30 +108,32 @@ module.exports = {
 
 const treatSystemMessage = (subject, sender_id, content) => {
   switch (subject) {
-    case "login":
-      return treatLogin(sender_id, content)
     case "confirmation":
-      console.log(sender_id, content);
-
+      return console.log(sender_id, content);
+    case "join_group":
+      return joinGroup(sender_id, content)
   }
 }
 
 
-const treatLogin = (user_id, content) => {
-  const { user_name, group, create_group } = content
+const joinGroup = (user_id, content) => {
+  console.log("user_id, content:", user_id, content);
+
+  const { user_name, group_name, create_group } = content
   // Ignore password for now
   const userData = users[user_id]
   if (!userData) {
-    return console.log(`!userData for ${user_id}! This should never happen!`)
+    return console.log(
+      `!userData for ${user_id}! This should never happen!`
+    )
   }
 
-  // Give a name to this user id
+  // Give a name to this user_id
   userData.user_name = user_name
 
   // Join the group?
-  const subject = "login"
-  let owner_id, members, owner, status, reply
-  let groupObject = groups[group]
+  let owner_id, members, owner, status
+  let groupObject = groups[group_name]
 
   if (groupObject) {
     // A group of this name already exists
@@ -146,18 +148,19 @@ const treatLogin = (user_id, content) => {
 
     } else {
       members = new Set().add(user_id)
-      groups[group] = groupObject = {
+      groups[group_name] = groupObject = {
         owner_id: user_id,
         members
       }
       status = "created"
-      broadcastMembersToGroup(group, members)
+      broadcastMembersToGroup(group_name)
     }
 
   } else if (groupObject) {
     members.add(user_id)
-    broadcastMembersToGroup(group, members)
     status = "joined"
+    broadcastMembersToGroup(group_name)
+
 
   } else {
     // The group does not yet exist, and there was no request to
@@ -165,13 +168,13 @@ const treatLogin = (user_id, content) => {
     status = "join-failed"
   }
 
-  content = { status, user_name, group, owner }
+  content = { status, user_name, group_name, owner }
 
   // Reply
   const message = {
     sender_id: "system",
     recipient_id: user_id,
-    subject,
+    subject: "group_joined",
     content
   }
 
@@ -199,22 +202,28 @@ const sendMessageToGroup = (message) => {
 }
 
 
-const broadcastMembersToGroup = (group, recipient_id) => {
-  recipient_id = Array.from(recipient_id)
-  const members = recipient_id.reduce((map, user_id) => {
+const broadcastMembersToGroup = (group_name) => {
+  let { owner_id, members } = groups[group_name]
+
+  recipient_id = Array.from(members)
+  members = recipient_id.reduce((map, user_id) => {
     map[ users[user_id].user_name ] = user_id
     return map
   }, {})
 
+  const owner = users[owner_id]
+
   const content = {
-    group,
-    members
+    group_name,
+    members,
+    owner,
+    owner_id
   }
 
   const message = {
     sender_id: "system",
     recipient_id,
-    subject: "group-members",
+    subject: "group_members",
     content
   }
 
