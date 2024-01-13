@@ -4,8 +4,14 @@
 
 
 const { v4: uuid } = require('uuid')
+const {
+  addMessageListener,
+  removeMessageListener,
+  treatMessage
+} = require('./messages')
 const users = {} // { <uuid>: { socket, user_name }}
 const groups = {} // { <name> : { owner_id, members: Set(uuid) }}
+
 
 
 const newUser = (socket) => {
@@ -18,23 +24,8 @@ const newUser = (socket) => {
     sender_id: "system",
     recipient_id: user_id
   })
+
   socket.send(message)
-}
-
-
-const treatMessage = (data) => {
-  const { subject, sender_id, recipient_id, content } = data
-  console.log("New message:", data);
-
-  if (recipient_id === "system") {
-    return treatSystemMessage(subject, sender_id, content)
-  }
-
-  switch (subject) {
-    case "chat":
-      data.sender = users[sender_id].user_name
-      return sendMessageToGroup(data)
-  }
 }
 
 
@@ -96,17 +87,54 @@ const disconnect = (socket) => {
 }
 
 
+// SENDING MESSAGES // SENDING MESSAGES // SENDING MESSAGES //
+
+const sendMessageToUser = (message) => {
+  const { recipient_id } = message
+  const { socket } = users[recipient_id]
+  message = JSON.stringify(message)
+  socket.send(message)
+}
+
+
+const sendMessageToGroup = (message) => {
+  let { recipient_id } = message
+  // May be array of user_ids or string group name
+
+  if (typeof recipient_id === "string") {
+    recipient_id = groups[recipient_id].members
+  }
+  if (recipient_id instanceof Set) {
+    recipient_id = Array.from(recipient_id)
+  }
+  if (!Array.isArray(recipient_id)) {
+    return console.log(`Cannot send message to group ${message.recipient_id}`, message)
+  }
+
+  message = JSON.stringify(message)
+  recipient_id.forEach( user_id => {
+    const { socket } = users[user_id]
+    socket.send(message)
+  })
+}
+
+
 module.exports = {
   newUser,
-  treatMessage,
-  disconnect
+  disconnect,
+  sendMessageToGroup,
+  sendMessageToUser,
+  // Re-export message methods
+  addMessageListener,
+  removeMessageListener,
+  treatMessage
 }
 
 
 
 // SYSTEM MESSAGES // SYSTEM MESSAGES // SYSTEM MESSAGES //
 
-const treatSystemMessage = (subject, sender_id, content) => {
+const treatSystemMessage = ({ subject, sender_id, content }) => {
   switch (subject) {
     case "confirmation":
       return console.log(sender_id, content);
@@ -114,6 +142,12 @@ const treatSystemMessage = (subject, sender_id, content) => {
       return joinGroup(sender_id, content)
   }
 }
+
+
+addMessageListener({
+  recipient_id: "system",
+  callback: treatSystemMessage
+})
 
 
 const joinGroup = (user_id, content) => {
@@ -153,6 +187,7 @@ const joinGroup = (user_id, content) => {
         members
       }
       status = "created"
+      owner = user_name
       broadcastMembersToGroup(group_name)
     }
 
@@ -182,32 +217,12 @@ const joinGroup = (user_id, content) => {
 }
 
 
-// SENDING MESSAGES // SENDING MESSAGES // SENDING MESSAGES //
-
-const sendMessageToUser = (message) => {
-  const { recipient_id } = message
-  const { socket } = users[recipient_id]
-  message = JSON.stringify(message)
-  socket.send(message)
-}
-
-
-const sendMessageToGroup = (message) => {
-  const { recipient_id } = message
-  message = JSON.stringify(message)
-  recipient_id.forEach( user_id => {
-    const { socket } = users[user_id]
-    socket.send(message)
-  })
-}
-
-
 const broadcastMembersToGroup = (group_name) => {
   let { owner_id, members } = groups[group_name]
 
   recipient_id = Array.from(members)
   members = recipient_id.reduce((map, user_id) => {
-    map[ users[user_id].user_name ] = user_id
+    map[ user_id ] = users[user_id].user_name
     return map
   }, {})
 

@@ -39,3 +39,4 @@ app.use(express.static(staticPath));
 // Add a WebSocket that uses the ws:// protocol and can keep a
 // TCP channel open and push messages through it to the client
 websocket(server)
+require('./games')
