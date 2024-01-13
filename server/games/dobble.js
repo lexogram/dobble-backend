@@ -47,8 +47,19 @@ const joinGroup = ({ sender_id, content }) => {
   const { group_name } = content
   const groupData = dobbleData[group_name]
                 || (dobbleData[group_name] = {})
-  const gameData  = groupData.gameData
+  const { votes, gameData } = groupData
   
+  if (votes) {
+    const message = {
+      sender_id: GAME,
+      recipient_id: sender_id,
+      subject: "votes",
+      content: anonymizeVotes(votes)
+    }
+
+    sendMessageToUser(message)
+  }
+
   if (gameData) {
     const message = {
       sender_id: GAME,
@@ -59,6 +70,15 @@ const joinGroup = ({ sender_id, content }) => {
 
     sendMessageToUser(message)
   }
+}
+
+
+const anonymizeVotes = votes => {
+  const votesCast = Object.entries(votes)
+  return votesCast.reduce((votesCast, [ pack, votes ]) => {
+    votesCast[pack] = votes.length
+    return votesCast
+  }, {})
 }
 
 
@@ -85,12 +105,7 @@ const treatVote = ({ sender_id, content }) => {
                 || (votes[pack_name] = [])
   packVotes.push(sender_id)
 
-  // Anonymize votes
-  const votesCast = Object.entries(votes)
-  content = votesCast.reduce((votesCast, [ pack, votes ]) => {
-    votesCast[pack] = votes.length
-    return votesCast
-  }, {})
+  content = anonymizeVotes(votes)
 
   // Tell all the members of the group about it
   const message = {
@@ -111,13 +126,12 @@ const createGameData = pack_name => {
   const { index, count } = pack
   const gameData = require(`${publicPath}${index}`)
 
-  let randomIndices = Array
+  const randomIndices = Array
     .from(
       {length: count},
       (_, index) => index
     )
   shuffle(randomIndices)
-  console.log("randomIndices:", randomIndices);
   
   gameData.randomIndices = randomIndices
   gameData.index = 0
