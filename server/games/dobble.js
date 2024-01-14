@@ -3,6 +3,7 @@
  */
 
 const GAME = "game"
+const DELAY = 500
 
 const {
   addMessageListener,
@@ -139,6 +140,7 @@ const createGameData = pack_name => {
   gameData.randomIndices = randomIndices
   gameData.index = 0
   gameData.root = index.replace(/\/[^/]+$/, "/images/")
+  gameData.DELAY = DELAY // time before new card is shown
 
   return gameData
 }
@@ -199,20 +201,21 @@ const acknowledgeMatch = ({
   const user_name = getUserNameFromId(sender_id)
 
   let index = gameData.index + 1
-  if (gameData.index < gameData.images.length - 2) {
-    gameData.index = index
-  } else {
+  if (index === gameData.images.length - 1) {
     index = "game_over"
   }
 
+  // Prevent any other player from claiming the same match
+  gameData.index = -1
+  // This will be reset after the timeOut call to showNextCard
+
   const score = gameData.score
             || (gameData.score = {})
-  score[user_name] = (score[user_name] || 0) + 1
+  score[sender_id] = (score[sender_id] || 0) + 1
 
   const content = {
     href,
     user_name,
-    index,
     score
   }
 
@@ -220,6 +223,28 @@ const acknowledgeMatch = ({
     sender_id: "game",
     recipient_id: group_name,
     subject: "match_found",
+    content
+  })
+
+  setTimeout(
+    showNextCard,
+    gameData.DELAY,
+
+    gameData,
+    group_name,
+    index
+  )
+}
+
+
+const showNextCard = (gameData, group_name, content) => {
+  gameData.index = content
+
+  // content will be next index to randomIndices or 'game_over'
+  sendMessageToGroup({
+    sender_id: "game",
+    recipient_id: group_name,
+    subject: "show_next_card",
     content
   })
 }
