@@ -135,7 +135,7 @@ const createGameData = pack_name => {
   
   gameData.randomIndices = randomIndices
   gameData.index = 0
-  gameData.root = index.replace(/\/[^/]+$/, "/")
+  gameData.root = index.replace(/\/[^/]+$/, "/images/")
 
   return gameData
 }
