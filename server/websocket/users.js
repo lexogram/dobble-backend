@@ -111,11 +111,32 @@ const sendMessageToGroup = (message) => {
     return console.log(`Cannot send message to group ${message.recipient_id}`, message)
   }
 
-  message = JSON.stringify(message)
-  recipient_id.forEach( user_id => {
-    const { socket } = users[user_id]
-    socket.send(message)
-  })
+  try {
+    message = JSON.stringify(message)
+    recipient_id.forEach( user_id => {
+      const { socket } = users[user_id]
+      socket.send(message)
+    })
+  } catch (error) {
+    const entries = Object.entries(message)
+    message = entries.reduce((string, [key, value]) => {
+      if (typeof value === "object" && !Array.isArray(value)) {
+        value = Object.keys(value).join(", ")
+      }
+      string += `
+      ${key}: ${value}`
+      return string
+    }, "")
+    console.log(`###############
+    Failed to send message ${message}
+    ${error}
+    ###############`)
+  }
+}
+
+
+const getUserNameFromId = user_id => {
+  return users[user_id].user_name
 }
 
 
@@ -124,6 +145,7 @@ module.exports = {
   disconnect,
   sendMessageToGroup,
   sendMessageToUser,
+  getUserNameFromId,
   // Re-export message methods
   addMessageListener,
   removeMessageListener,
@@ -172,7 +194,7 @@ const joinGroup = (user_id, content) => {
   if (groupObject) {
     // A group of this name already exists
     ({ owner_id, members } = groupObject)
-    owner = users[owner_id].user_name
+    owner = getUserNameFromId(owner_id)
   }
 
   if (create_group) {
@@ -221,9 +243,9 @@ const broadcastMembersToGroup = (group_name) => {
   let { owner_id, members } = groups[group_name]
 
   recipient_id = Array.from(members)
-  members = recipient_id.reduce((map, user_id) => {
-    map[ user_id ] = users[user_id].user_name
-    return map
+  members = recipient_id.reduce((memberMap, user_id) => {
+    memberMap[ user_id ] = getUserNameFromId(user_id)
+    return memberMap
   }, {})
 
   const owner = users[owner_id]
