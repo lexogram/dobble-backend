@@ -8,7 +8,8 @@ const {
   addMessageListener,
   removeMessageListener,
   sendMessageToUser,
-  sendMessageToGroup
+  sendMessageToGroup,
+  getUserNameFromId
 } = require("../websocket/users");
 const publicPath = "../../public/"
 const packData = require(
@@ -39,6 +40,8 @@ const treatGameMessages = (messageData) => {
       return treatVote(messageData)
     case "select_pack":
       return selectPack(messageData)
+    case "match":
+      return scoreMatch(messageData)
   }
 }
 
@@ -48,7 +51,7 @@ const joinGroup = ({ sender_id, content }) => {
   const groupData = dobbleData[group_name]
                 || (dobbleData[group_name] = {})
   const { votes, gameData } = groupData
-  
+
   if (votes) {
     const message = {
       sender_id: GAME,
@@ -132,7 +135,7 @@ const createGameData = pack_name => {
       (_, index) => index
     )
   shuffle(randomIndices)
-  
+
   gameData.randomIndices = randomIndices
   gameData.index = 0
   gameData.root = index.replace(/\/[^/]+$/, "/images/")
@@ -151,7 +154,7 @@ const selectPack = ({ content }) => {
 
   // Save for future group members
   groupData.gameData = content
-  
+
   // Send game data to all the members of the group
   const message = {
     sender_id: GAME,
@@ -161,6 +164,64 @@ const selectPack = ({ content }) => {
   }
 
   sendMessageToGroup(message)
+}
+
+
+const scoreMatch = ({ sender_id, content }) => {
+  const { href, group_name } = content
+  const gameData = dobbleData[group_name].gameData
+  const { index, randomIndices, images, cardData } = gameData
+
+  // Find the file name of the images that match
+  const images1 = cardData[randomIndices[index]]
+                  .images
+                  .map( image => image.imageIndex)
+  const images2 = cardData[randomIndices[index + 1]]
+                  .images
+                  .map( image => image.imageIndex)
+  const imageIndex = images1.find(
+    index => images2.indexOf(index) + 1
+  )
+  const match = images[imageIndex].source
+  if (href === match) {
+    // User sender_id is the first to find the match
+    acknowledgeMatch({ gameData, sender_id, group_name, href })
+  }
+}
+
+
+const acknowledgeMatch = ({
+  gameData,
+  sender_id,
+  group_name,
+  href
+}) => {
+  const user_name = getUserNameFromId(sender_id)
+
+  let index = gameData.index + 1
+  if (gameData.index < gameData.images.length - 2) {
+    gameData.index = index
+  } else {
+    index = "game_over"
+  }
+
+  const score = gameData.score
+            || (gameData.score = {})
+  score[user_name] = (score[user_name] || 0) + 1
+
+  const content = {
+    href,
+    user_name,
+    index,
+    score
+  }
+
+  sendMessageToGroup({
+    sender_id: "game",
+    recipient_id: group_name,
+    subject: "match_found",
+    content
+  })
 }
 
 
