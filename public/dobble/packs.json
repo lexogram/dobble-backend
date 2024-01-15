@@ -1,20 +1,26 @@
 [
   {
+    "name": "Animals",
+    "count": 31,
+    "thumbnail": "dobble/animals/thumbnail.webp",
+    "index": "dobble/animals/index.json"
+  },
+  {
+    "name": "Colours",
+    "count": 7,
+    "thumbnail": "dobble/colours/thumbnail.webp",
+    "index": "dobble/colours/index.json"
+  },
+  {
     "name": "Chess",
     "count": 13,
     "thumbnail": "dobble/chess/thumbnail.webp",
     "index": "dobble/chess/index.json"
   },
-  {
+   {
     "name": "Zebra",
     "count": 13,
     "thumbnail": "dobble/zebra/thumbnail.webp",
     "index": "dobble/zebra/index.json"
-  },
-  {
-    "name": "Animals",
-    "count": 31,
-    "thumbnail": "dobble/animals/thumbnail.webp",
-    "index": "dobble/animals/index.json"
   }
 ]
