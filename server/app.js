@@ -34,9 +34,12 @@ app.use(cors({ origin }))
 const staticPath = path.resolve(__dirname, '../public')
 app.use(express.static(staticPath));
 
-
+app.get('/', (req, res) => {
+  res.send(`Connected to ${PORT}`)
+})
 
 // Add a WebSocket that uses the ws:// protocol and can keep a
 // TCP channel open and push messages through it to the client
 websocket(server)
+
 require('./games')
