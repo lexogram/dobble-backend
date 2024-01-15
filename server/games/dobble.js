@@ -3,7 +3,7 @@
  */
 
 const GAME = "game"
-const DELAY = 500
+const DELAY = 1000
 
 const {
   addMessageListener,
@@ -174,20 +174,28 @@ const scoreMatch = ({ sender_id, content }) => {
   const gameData = dobbleData[group_name].gameData
   const { index, randomIndices, images, cardData } = gameData
 
-  // Find the file name of the images that match
-  const images1 = cardData[randomIndices[index]]
-                  .images
-                  .map( image => image.imageIndex)
-  const images2 = cardData[randomIndices[index + 1]]
-                  .images
-                  .map( image => image.imageIndex)
-  const imageIndex = images1.find(
-    index => images2.indexOf(index) + 1
-  )
-  const match = images[imageIndex].source
-  if (href === match) {
-    // User sender_id is the first to find the match
-    acknowledgeMatch({ gameData, sender_id, group_name, href })
+  if (index < 0 || isNaN(index)) {
+    // Someone has already found the match, or the game is over.
+    // Ignore the incoming message.
+
+  } else {
+    // Find the file name of the images that match
+    const images1 = cardData[randomIndices[index]]
+                    .images
+                    .map( image => image.imageIndex)
+    const images2 = cardData[randomIndices[index + 1]]
+                    .images
+                    .map( image => image.imageIndex)
+    const imageIndex = images1.find(
+      index => images2.indexOf(index) + 1
+    )
+    const match = images[imageIndex].source
+
+    if (href === match) {
+      // User sender_id is the first to find the match
+      data = { gameData, sender_id, group_name, href }
+      acknowledgeMatch(data)
+    }
   }
 }
 
