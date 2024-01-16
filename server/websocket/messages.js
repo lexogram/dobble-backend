@@ -82,24 +82,21 @@ const treatMessage = (message) => {
     recipient_id
   } = message
   console.log("New message:", message);
-  let unhandled = true 
+  let handled = false 
 
   // The same message can be handled twice.
   // Once for its recipient (treat messages to "system" first)...
-  let listeners = messageListeners.recipient_id[recipient_id]
-  if (listeners) {
-    listeners.forEach( listener => listener( message ))
-    unhandled = false
-  }
-
+  let listeners = Array.from(
+    messageListeners.recipient_id[recipient_id] || []
+  )
+  handled = listeners.some( listener => listener( message ))
+ 
   // ... and once for its subject
-  listeners = messageListeners.subject[subject]
-  if (listeners) {
-    listeners.forEach( listener => listener( message ))
-    unhandled = false
-  }
+  listeners = Array.from(messageListeners.subject[subject] || [])
+  handled = listeners.some( listener => listener( message ))
+         || handled
   
-  if (unhandled) {
+  if (!handled) {
     console.log("Unhandled message:", message);
   }
 }

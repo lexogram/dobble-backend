@@ -37,9 +37,9 @@ const PROTOCOL = process.env.PROTOCOL || "https"
 const ORIGINS = process.env.ORIGINS
 const PORTS = process.env.PORTS
 
-console.log("PROTOCOL:", PROTOCOL);
-console.log("ORIGINS:", ORIGINS);
-console.log("PORTS:", PORTS);
+// console.log("PROTOCOL:", PROTOCOL);
+// console.log("ORIGINS:", ORIGINS);
+// console.log("PORTS:", PORTS);
 
 
 
@@ -55,43 +55,43 @@ const ports = (() => {
     return []
   }
 })()
-console.log("ports:", ports);
+// console.log("ports:", ports);
 
 // Define which domains are allowed...
 let origin
 try {
   origin = JSON.parse(ORIGINS)
-  console.log("parsed origin:", origin);
+  // console.log("parsed origin:", origin);
 
   origin = origin.map( origin => {
     const match = /\/(.+)\/(.+)?/.exec(origin)
 
     if (match) {
-      console.log("match:", match);
+      // console.log("match:", match);
 
       // Extract the regular expression and use it
       const [ , expression, options ] = match
-      console.log("expression:", expression);
-      console.log("options:", options);
+      // console.log("expression:", expression);
+      // console.log("options:", options);
 
 
       isOnLAN &&= isLocalHost(expression)
       origin = new RegExp(expression, options)
-      console.log("(in map) regex origin:", origin);
+      // console.log("(in map) regex origin:", origin);
 
 
     } else {
       // Apply the given protocol to every string host
       isOnLAN &&= isLocalHost(origin)
       origin = `${PROTOCOL}://${origin}`
-      console.log("(in map) standard origin:", origin);
+      // console.log("(in map) standard origin:", origin);
 
     }
 
     return origin
   })
 
-  console.log("mapped origin:", origin);
+  // console.log("mapped origin:", origin);
 
   // ... and include all the acceptable ports
   origin = origin.reduce(( origin, hostname ) => {
@@ -99,9 +99,9 @@ try {
 
     if (hostname instanceof RegExp || /:\d+$/.test(hostname)) {
       // Ignore Regular Expressions and entries with a port
-      console.log("RegExp simply added as is")
+      // console.log("RegExp simply added as is")
     } else {
-      console.log("Adding ports:", ports)
+      // console.log("Adding ports:", ports)
       ports.forEach( port => origin.push(`${hostname}:${port}`))
     }
 
@@ -118,15 +118,15 @@ try {
   origin = []
 }
 
-console.log("originsParsed:", originsParsed);
-console.log("isOnLAN:", isOnLAN);
-console.log("treated origin:", origin);
+// console.log("originsParsed:", originsParsed);
+// console.log("isOnLAN:", isOnLAN);
+// console.log("treated origin:", origin);
 
 
 
 if (!origin.length && originsParsed && isOnLAN) {
   // Allow all connections when working on a local network
-  console.log("setting origin safely to *")
+  // console.log("setting origin safely to *")
   origin = "*"
 }
 
@@ -151,6 +151,6 @@ function isLocalHost(expression) {
   return false
 }
 
-console.log("module.exports =", origin);
+// console.log("module.exports =", origin);
 
 module.exports = origin

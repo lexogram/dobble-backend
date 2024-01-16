@@ -3,7 +3,7 @@
  */
 
 const GAME = "game"
-const DELAY = 1000
+
 
 const {
   addMessageListener,
@@ -35,7 +35,7 @@ const dobbleData = {}
 
 const treatGameMessages = (messageData) => {
   switch (messageData.subject) {
-    // case "join_group":
+    // case "join_group": // called directly from treatMessage
     //   return joinGroup(messageData)
     case "vote":
       return treatVote(messageData)
@@ -43,7 +43,11 @@ const treatGameMessages = (messageData) => {
       return selectPack(messageData)
     case "match":
       return scoreMatch(messageData)
+    case "request_next_card":
+      return requestNextCard(messageData)
   }
+
+  return false // not handled
 }
 
 
@@ -74,6 +78,8 @@ const joinGroup = ({ sender_id, content }) => {
 
     sendMessageToUser(message)
   }
+
+  return true // message was handled
 }
 
 
@@ -120,10 +126,12 @@ const treatVote = ({ sender_id, content }) => {
   }
 
   sendMessageToGroup(message)
+
+  return true // message was handled
 }
 
 
-const createGameData = pack_name => {
+const createGameData = (pack_name, delay) => {
   const pack = packData.find(
     pack => pack.name === pack_name
   )
@@ -137,22 +145,24 @@ const createGameData = pack_name => {
     )
   shuffle(randomIndices)
 
+  gameData.last = count - 2
   gameData.randomIndices = randomIndices
   gameData.index = 0
+  gameData.nextIndex = 1 // so owner can click Next Card at start
   gameData.root = index.replace(/\/[^/]+$/, "/images/")
-  gameData.DELAY = DELAY // time before new card is shown
+  gameData.delay = delay
 
   return gameData
 }
 
 
 const selectPack = ({ content }) => {
-  const { group_name, pack_name } = content
+  const { group_name, pack_name, delay } = content
 
   const groupData = dobbleData[group_name]
                 || (dobbleData[group_name] = {})
 
-  content = createGameData(pack_name)
+  content = createGameData(pack_name, delay)
 
   // Save for future group members
   groupData.gameData = content
@@ -166,6 +176,8 @@ const selectPack = ({ content }) => {
   }
 
   sendMessageToGroup(message)
+
+  return true // message was handled
 }
 
 
@@ -196,6 +208,8 @@ const scoreMatch = ({ sender_id, content }) => {
       data = { gameData, sender_id, group_name, href }
       acknowledgeMatch(data)
     }
+
+    return true // message was handled
   }
 }
 
@@ -209,7 +223,7 @@ const acknowledgeMatch = ({
   const user_name = getUserNameFromId(sender_id)
 
   let index = gameData.index + 1
-  if (index === gameData.images.length - 1) {
+  if (index > gameData.last) {
     index = "game_over"
   }
 
@@ -234,19 +248,38 @@ const acknowledgeMatch = ({
     content
   })
 
-  setTimeout(
-    showNextCard,
-    gameData.DELAY,
+  if (isNaN(gameData.delay)) {
+    // Wait for the group owner to click on Next Card
+    gameData.nextIndex = index
 
-    gameData,
-    group_name,
-    index
-  )
+  } else {
+    setTimeout(
+      showNextCard,
+      gameData.delay,
+
+      gameData,
+      group_name,
+      index
+    )
+  }
+}
+
+
+const requestNextCard = ({ content: group_name }) => {
+  const gameData = dobbleData[group_name].gameData
+  const index = gameData.nextIndex
+
+  showNextCard(gameData, group_name, index)
+
+  return true // message was handled
 }
 
 
 const showNextCard = (gameData, group_name, content) => {
   gameData.index = content
+  gameData.nextIndex = (content === gameData.last)
+   ? "game_over"
+   : (content + 1)
 
   // content will be next index to randomIndices or 'game_over'
   sendMessageToGroup({

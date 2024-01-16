@@ -159,7 +159,8 @@ module.exports = {
 const treatSystemMessage = ({ subject, sender_id, content }) => {
   switch (subject) {
     case "confirmation":
-      return console.log(sender_id, content);
+      console.log(sender_id, content)
+      return true // message was handled
     case "join_group":
       return joinGroup(sender_id, content)
   }
@@ -179,9 +180,10 @@ const joinGroup = (user_id, content) => {
   // Ignore password for now
   const userData = users[user_id]
   if (!userData) {
-    return console.log(
+    console.log(
       `!userData for ${user_id}! This should never happen!`
     )
+    return false // message was _not_ handled
   }
 
   // Give a name to this user_id
@@ -236,6 +238,8 @@ const joinGroup = (user_id, content) => {
   }
 
   sendMessageToUser(message)
+
+  return true // message was handled
 }
 
 
